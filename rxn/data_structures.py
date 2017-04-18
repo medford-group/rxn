@@ -5,7 +5,6 @@ from networkx.readwrite import json_graph
 
 from imolecule.notebook import generate
 
-
 class MolGraph(Graph):
     def __init__(self, data_dict=None):
         Graph.__init__(self)
@@ -116,6 +115,43 @@ class RxnGraph(DiGraph):
             reacts = [self.node[p]['graph'] for p in self.predecessors(rxn)]
             all_rxns.append([reacts, prods])
         return all_rxns
+
+    def to_jgraph(self):
+        """Return json object for jgraph rendering"""
+        jg = {'nodes':{}, 'edges':[]}
+        node_name_dict = {}
+        for n in self.nodes():
+            attrs = {}
+            if self.node[n]['type'] == 'reaction':
+                attrs['size'] = 0.25
+                attrs['color'] = '0x000000'
+                name = n
+                attrs['label'] = name
+                attrs['.label'] = name
+                attrs['description'] = name
+                node_name_dict[n] = name
+            elif self.node[n]['type'] == 'molecule':
+                attrs['size'] = 1
+                attrs['color'] = '0x0000ff'
+                name = n
+                i = 1
+                while name in jg['nodes']:
+                    name = n+'('+str(i)+')'
+
+                attrs['label'] = name
+                attrs['.label'] = name
+                attrs['description'] = name
+                node_name_dict[n] = name
+
+            jg['nodes'][name] = attrs
+
+        for e in self.edges():
+            source, target = e
+            sn = node_name_dict[source]
+            tn = node_name_dict[target]
+            jg['edges'].append({'source':sn, 'target':tn})
+
+        return jg
 
     @staticmethod
     def node_matcher(n1, n2):
