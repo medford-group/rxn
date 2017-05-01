@@ -1,8 +1,10 @@
 name: rxngraph
 channels:
 - openbabel
+- anaconda
 - defaults
 dependencies:
+- networkx=1.11=py27_0
 - _nb_ext_conf=0.3.0=py27_0
 - anaconda-client=1.6.2=py27_0
 - backports=1.0=py27_0
@@ -41,7 +43,6 @@ dependencies:
 - nbconvert=5.1.1=py27_0
 - nbformat=4.3.0=py27_0
 - nbpresent=3.0.2=py27_0
-- networkx=1.11=py27_0
 - notebook=5.0.0=py27_0
 - numpy=1.12.1=py27_0
 - openssl=1.0.2k=1
@@ -83,6 +84,7 @@ dependencies:
 - openbabel=2.4.1=py27_2
 - pip:
   - ase==3.13.0
+  - autopep8==1.3.1
   - backports-abc==0.5
   - backports.shutil-get-terminal-size==1.0.0
   - backports.ssl-match-hostname==3.4.0.2
@@ -92,8 +94,10 @@ dependencies:
   - jgraph==0.2.1
   - jupyter-client==5.0.1
   - jupyter-core==4.3.0
-  - molmod==1.1
   - nb-anacondacloud==1.2.0
   - nb-conda==2.0.0
   - nb-conda-kernels==2.0.0
   - prompt-toolkit==1.0.14
+  - pycodestyle==2.3.1
+prefix: /home/aj/Software/anaconda3/envs/rxngraph
+
