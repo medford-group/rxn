@@ -6,6 +6,7 @@ from networkx.readwrite import json_graph
 from imolecule.notebook import generate
 from imolecule.format_converter import convert
 import imolecule
+from ase import Atoms
 
 def unique_name(namein, name_list):
     i = 1
@@ -29,6 +30,7 @@ class MolGraph(Graph):
         atoms = []
         bonds = []
         nodes = []
+	#print(self.nodes())
         for n in self.nodes():
             if self.node[n]:
                 atoms.append(self.node[n].copy())
@@ -40,6 +42,22 @@ class MolGraph(Graph):
         mol['atoms'] = atoms
         mol['bonds'] = bonds
         return mol
+
+    def to_atoms_object(self):
+        """Construct molecule dict with atoms/bonds from molecule graph"""
+        mol = {}
+        atoms = []
+        bonds = []
+        nodes = []
+	elements = []
+	atom_coords = []
+        for n in self.nodes():
+            if self.node[n]:
+		nodey = self.node[n].copy()
+		atom_coords.append(nodey['location'])
+		elements.append(nodey['element'])
+	molecule = Atoms(elements,positions=atom_coords)
+	return molecule
 
     def from_dict(self, moldict):
         """Construct molecule graph from molecule dict with atoms/bonds"""
