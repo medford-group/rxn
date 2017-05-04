@@ -91,26 +91,69 @@ def recursive_scissions(reactant_list, network=[], finished=[]):
             finished=finished))
 
 
+def get_mechanisms(rxn_net, starting_species, terminal_species, max_depth):
+
+    def branches(species):
+        b = []
+        for rxn in rxn_net.successors(species):
+            prods = rxn_net.successors(rxn)
+            b.append(prods)
+        return b
+
+    for species in starting_species:
+        print(species)
+        for i, b in enumerate(branches(species)):
+            print('Branch {}'.format(i))
+            print([str(bi) for bi in b])
+
 if __name__ == '__main__':
-    ONN = MolGraph().generate('ONN', 'smi')
-    ONNO = MolGraph().generate('ONNO', 'smi')
-    NN = MolGraph().generate('N#N', 'smi')
-    H2O = MolGraph().generate('[OH2]', 'smi')
-    NH2OH = MolGraph().generate('NO', 'smi')
 
-    # TEST reaction equivalency
-    #all_rxns = scissions(ONNO)
-    #new_rxns = scissions(ONNO,all_rxns)
-    # assert new_rxns == all_rxns # make sure that reactions don't duplicate
+    ONNO = MolGraph().generate('ONNO','smi') #generate ONNO
+    ONN = MolGraph().generate('ONN','smi') #generate ONN
+    N2H4 = MolGraph().generate('NN','smi') #generate N2H4
+    NH3 = MolGraph().generate('[NH3]','smi') #generate NH3
+    H2O = MolGraph().generate('[OH2]','smi') #generate H2O
+    O2 = MolGraph().generate('O=O','smi') #generate O2
+    N2 = MolGraph().generate('N#N','smi') #generate N2
+    H2 = MolGraph().generate('[HH]','smi') #generate H2
+    NH2OH = MolGraph().generate('NO','smi') #generate NH2OH
+    NO = MolGraph().generate('[N]=O','smi') #generate NO
 
-    species = []
+    global_reactants = [H2O, N2, O2]
+    key_intermediates = [ONNO, ONN, N2H4]
+    global_products = [NO,NH3, NH2OH]
+
     rxns = recursive_scissions(
-        [ONNO, ONN, NN, NH3, H2O, NH2OH], finished=species)
+        [ONN,O2])
+
+    rxns_list = []
+    for rxn in rxns:
+	products = [rxn.node[p]['graph'] for p in rxn.nodes() if rxn.node[p]['type']=='molecule' and rxn.node[p]['molecule_type']=='product']
+	reactants = [rxn.node[p]['graph'] for p in rxn.nodes() if rxn.node[p]['type']=='molecule' and rxn.node[p]['molecule_type']=='reactant']
+	rxns_list.append([reactants, products])
+
+    all_rxns = RxnGraph()
+    all_rxns.from_rxn_list(rxns_list)
+
+    all_rxns.classify_rxns()
+
+    rxns = [n for n in all_rxns.nodes() if all_rxns.node[n]['type'] == 'reaction']
 
     for rxn in rxns:
-        print rxn
-    print len(rxns)
+	reacts, prods = all_rxns.get_reactants_products(rxn)
+	rxn_type = all_rxns.node[rxn]['reaction_type']
+	react_composition = {}
+	prod_composition = {}
+	for r in reacts:
+	    react_composition = r.composition(react_composition) #cumulative reactant composition
+	for r in prods:
+	    prod_composition = r.composition(prod_composition) #cumulative product composition
+	    
+	if react_composition.get('N',0) == 2:
+	    #reactions before N-N bond scission
+	    if rxn_type not in ['N-N_scission','H-H_scission']:
+		all_rxns.reverse_rxn(rxn,remove=True) #make N2-H and N2-O scissions into couplings
+	    elif True in [r in global_products for r in reactants]:
+		all_rxns.reverse_rxn(rxn,remove=True) #Make sure global products are also local products
 
-    for sp in species:
-        print sp
-    print len(species)
+    get_mechanisms(all_rxns, ['NN','OO'], ['NO'], 5)
