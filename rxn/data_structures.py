@@ -131,7 +131,7 @@ class MolGraph(Graph):
         topological equivalency (e.g. atom/bonds) as defined by graph
         isomorphism. Atoms are considered equivalent if the element and
         charge are the same."""
-        nm = iso.categorical_node_match('element', 'charge')
+        nm = iso.categorical_node_match(['element', 'charge'],['X',-100])
         return nx.is_isomorphic(self, other, node_match=nm)
 
 class RxnGraph(DiGraph):
